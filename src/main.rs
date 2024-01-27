@@ -1,20 +1,12 @@
-use axum::{
-    body::Body,
-    handler::Handler,
-    http::{HeaderMap, Response},
-    response::IntoResponse,
-    routing::get,
-    Router,
-};
+use axum::{http::HeaderMap, routing::get, Router};
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
-async fn hello(h: HeaderMap) -> String {
-    let foo: String = h
+async fn hello(header: HeaderMap) -> String {
+    header
         .into_iter()
         .map(|item| format!("{:?} = {:?}", item.0, item.1))
         .collect::<Vec<String>>()
-        .join("\n");
-    foo
+        .join("\n")
 }
 
 #[tokio::main]
