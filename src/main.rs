@@ -1,5 +1,6 @@
 use axum::{http::HeaderMap, routing::get, Router};
 use axum_extra::extract::CookieJar;
+use std::env;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 async fn hello(header: HeaderMap, jar: CookieJar) -> String {
@@ -19,7 +20,12 @@ async fn hello(header: HeaderMap, jar: CookieJar) -> String {
         })
         .collect::<Vec<String>>()
         .join("\n");
-    format!("Cookies\n=======\n{cookies}\nHeaders\n=======\n{headers}")
+    let pod_name = match env::var("POD_NAME") {
+        Ok(name) => name,
+        Err(_) => "unknown".to_string(),
+    };
+
+    format!("Pod name: {pod_name}\nCookies\n=======\n{cookies}\nHeaders\n=======\n{headers}")
 }
 
 #[tokio::main]
