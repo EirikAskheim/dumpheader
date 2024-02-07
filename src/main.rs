@@ -1,12 +1,25 @@
 use axum::{http::HeaderMap, routing::get, Router};
+use axum_extra::extract::CookieJar;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
-async fn hello(header: HeaderMap) -> String {
-    header
+async fn hello(header: HeaderMap, jar: CookieJar) -> String {
+    let headers = header
         .into_iter()
         .map(|item| format!("{:?} = {:?}", item.0, item.1))
         .collect::<Vec<String>>()
-        .join("\n")
+        .join("\n");
+    let cookies = jar
+        .iter()
+        .map(|item| {
+            format!(
+                "{:?} = {:?}",
+                item.name_value_trimmed(),
+                item.value_trimmed()
+            )
+        })
+        .collect::<Vec<String>>()
+        .join("\n");
+    format!("Cookies\n=======\n{cookies}\nHeaders\n=======\n{headers}")
 }
 
 #[tokio::main]
