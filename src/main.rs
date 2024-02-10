@@ -1,6 +1,7 @@
 use axum::{http::HeaderMap, routing::get, Router};
 use axum_extra::extract::CookieJar;
 use std::env;
+use tokio::signal;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 async fn hello(header: HeaderMap, jar: CookieJar) -> String {
@@ -25,7 +26,7 @@ async fn hello(header: HeaderMap, jar: CookieJar) -> String {
         Err(_) => "unknown".to_string(),
     };
 
-    format!("Pod name: {pod_name}\nCookies\n=======\n{cookies}\nHeaders\n=======\n{headers}")
+    format!("Pod name: {pod_name}\nCookies\n=======\n{cookies}\nHeaders\n=======\n{headers}\n")
 }
 
 #[tokio::main]
@@ -44,5 +45,32 @@ async fn main() {
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    axum::serve(listener, app).await.unwrap();
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .unwrap();
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
 }
