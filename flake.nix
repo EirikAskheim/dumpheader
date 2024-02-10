@@ -29,6 +29,7 @@
         };
         dockerImage = pkgs.dockerTools.buildLayeredImage {
           name = myRustBuild.pname;
+          tag = "latest";
           config = { Cmd = [ "${myRustBuild}/bin/dumpheader" ]; };
         };
       in
