@@ -5,6 +5,7 @@ use tokio::signal;
 use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 async fn hello(header: HeaderMap, jar: CookieJar) -> String {
+    let max_header_width = header.iter().map(|x| x.0.as_str().len()).max().unwrap();
     let headers = header
         .into_iter()
         .map(|item| {
@@ -12,7 +13,8 @@ async fn hello(header: HeaderMap, jar: CookieJar) -> String {
                 Some(value) => value.as_str().to_owned(),
                 None => "no-header-name".to_owned(),
             };
-            format!("{:?} = {:?}", header_name, item.1)
+            let header_value = item.1.to_str().unwrap().to_owned();
+            format!("{header_name:<max_header_width$} = {header_value:}")
         })
         .collect::<Vec<String>>()
         .join("\n");
