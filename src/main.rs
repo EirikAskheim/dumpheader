@@ -7,7 +7,13 @@ use tracing::Level;
 async fn hello(header: HeaderMap, jar: CookieJar) -> String {
     let headers = header
         .into_iter()
-        .map(|item| format!("{:?} = {:?}", item.0, item.1))
+        .map(|item| {
+            let header_name = match item.0 {
+                Some(value) => value.as_str().to_owned(),
+                None => "no-header-name".to_owned(),
+            };
+            format!("{:?} = {:?}", header_name, item.1)
+        })
         .collect::<Vec<String>>()
         .join("\n");
     let cookies = jar
