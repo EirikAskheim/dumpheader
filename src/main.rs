@@ -6,7 +6,7 @@ use tower_http::trace::{self, TraceLayer};
 use tracing::Level;
 async fn hello(header: HeaderMap, jar: CookieJar) -> String {
     let max_header_width = header.iter().map(|x| x.0.as_str().len()).max().unwrap();
-    let headers = header
+    let mut headers = header
         .into_iter()
         .map(|item| {
             let header_name = match item.0 {
@@ -16,8 +16,9 @@ async fn hello(header: HeaderMap, jar: CookieJar) -> String {
             let header_value = item.1.to_str().unwrap().to_owned();
             format!("{header_name:<max_header_width$} = {header_value:}")
         })
-        .collect::<Vec<String>>()
-        .join("\n");
+        .collect::<Vec<String>>();
+    headers.sort();
+    let headers = headers.join("\n");
     let cookies = jar
         .iter()
         .map(|item| {
