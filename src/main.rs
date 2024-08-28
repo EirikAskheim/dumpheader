@@ -1,6 +1,6 @@
 use axum::{
     http::HeaderMap,
-    routing::{get, post},
+    routing::get,
     Router,
 };
 use axum_extra::extract::CookieJar;
@@ -51,8 +51,7 @@ async fn main() {
         .init();
     // build our application with a single route
     let app = Router::new()
-        .fallback_service(get(hello))
-        .fallback_service(post(hello))
+        .fallback_service(get(hello).post(hello))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
