@@ -46,7 +46,7 @@ async fn main() {
         .with_max_level(tracing::Level::DEBUG)
         .init();
     // build our application with a single route
-    let app = Router::new().route("/", get(hello)).layer(
+    let app = Router::new().fallback_service(get(hello)).layer(
         TraceLayer::new_for_http()
             .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
             .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
