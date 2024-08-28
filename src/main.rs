@@ -1,4 +1,8 @@
-use axum::{http::HeaderMap, routing::{get, post, post_service}, Router};
+use axum::{
+    http::HeaderMap,
+    routing::{get, post},
+    Router,
+};
 use axum_extra::extract::CookieJar;
 use std::env;
 use tokio::signal;
@@ -46,11 +50,14 @@ async fn main() {
         .with_max_level(tracing::Level::DEBUG)
         .init();
     // build our application with a single route
-    let app = Router::new().fallback_service(get(hello)).fallback_service(post(hello)).layer(
-        TraceLayer::new_for_http()
-            .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
-            .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
-    );
+    let app = Router::new()
+        .fallback_service(get(hello))
+        .fallback_service(post(hello))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
+        );
 
     // run our app with hyper, listening globally on port 3000
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
