@@ -1,4 +1,4 @@
-use axum::{http::HeaderMap, routing::get, Router};
+use axum::{http::HeaderMap, routing::{get, post, post_service}, Router};
 use axum_extra::extract::CookieJar;
 use std::env;
 use tokio::signal;
@@ -46,7 +46,7 @@ async fn main() {
         .with_max_level(tracing::Level::DEBUG)
         .init();
     // build our application with a single route
-    let app = Router::new().fallback_service(get(hello)).layer(
+    let app = Router::new().fallback_service(get(hello)).fallback_service(post(hello)).layer(
         TraceLayer::new_for_http()
             .make_span_with(trace::DefaultMakeSpan::new().level(Level::INFO))
             .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
